@@ -1,17 +1,55 @@
 @import "tailwindcss";
 
-@theme {
-  --color-dark-bg: #0a0a0a;
-  --color-dark-card: #13131a;
-  --color-dark-border: #262630;
-  --color-brand-purple: #6d4aff;
-  --color-brand-light: #8b6dff;
-  --color-text-main: #ffffff;
-  --color-text-muted: #9ca3af;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* LIGHT THEME — warm cream instead of blinding white */
+  body {
+    @apply bg-[#f5f1ea] text-zinc-900 antialiased transition-colors duration-300;
+  }
+
+  /* DARK THEME */
+  .dark body {
+    @apply bg-[#0a0a0a] text-zinc-100;
+  }
 }
 
-@layer base {
-  body {
-    @apply bg-dark-bg text-text-main font-sans antialiased;
-  }
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(196,164,124,0.5);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: #C4A47C; }
+
+/* ===== Hero CTA Buttons ===== */
+
+.btn-swap-fill {
+  background: #C4A47C;
+  color: #000;
+  border: 1.5px solid #C4A47C;
+  box-shadow: 0 12px 30px rgba(196, 164, 124, 0.35);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-swap-fill:hover {
+  background: transparent;
+  color: #C4A47C;
+  box-shadow: 0 0 30px rgba(196, 164, 124, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-swap-outline {
+  background: transparent;
+  color: #C4A47C;
+  border: 1.5px solid #C4A47C;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-swap-outline:hover {
+  background: #C4A47C;
+  color: #000;
+  box-shadow: 0 12px 30px rgba(196, 164, 124, 0.35);
+  transform: translateY(-2px);
 }
