@@ -1,25 +1,31 @@
-import Navbar from '@/components/Navbar'
-import Hero from '@/components/Hero'
-import About from '@/components/About'
-import Services from '@/components/Services'
-import Projects from '@/components/Projects'
-import Journey from '@/components/Journey'
-import Contact from '@/components/Contact'
-import Footer from '@/components/Footer'
+import Navbar from '@/components/Navbar';
+import Hero from '@/components/Hero';
+import About from '@/components/About';
+import Skills from '@/components/Skills';
+import Resume from '@/components/Resume';
+import Portfolio from '@/components/Portfolio';
+import Services from '@/components/Services';
+import Contact from '@/components/Contact';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-24 space-y-32">
-        <Hero />
-        <About />
-        <Services />
-        <Projects />
-        <Journey />
-        <Contact />
-      </main>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-24">
+        <main className="space-y-32 pb-24">
+          <Hero />
+          <About />
+          <Skills />
+          <Resume />
+          <Portfolio />
+          <Services />
+          <Contact />
+        </main>
+      </div>
+
       <Footer />
     </div>
-  )
+  );
 }
