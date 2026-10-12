@@ -1,113 +1,160 @@
-import { FiDownload } from 'react-icons/fi';
+'use client';
 
-interface ExperienceItemProps {
-  date: string;
-  title: string;
-  company: string;
-  points: string[];
-}
+import { motion } from 'framer-motion';
+import { FiDownload, FiMail, FiPhone, FiMapPin, FiLinkedin } from 'react-icons/fi';
 
-const ExperienceItem = ({ date, title, company, points }: ExperienceItemProps) => (
-  <div className="relative pl-6 pb-12 border-l border-dark-border last:border-0 last:pb-0">
-    <div className="absolute w-3 h-3 bg-brand-purple rounded-full -left-[6.5px] top-1.5 ring-4 ring-dark-bg"></div>
-    <div className="text-sm text-brand-purple font-medium mb-1">{date}</div>
-    <h3 className="text-xl font-semibold mb-1">{title}</h3>
-    <div className="text-text-muted mb-4">{company}</div>
-    <ul className="space-y-2 text-text-muted list-disc list-inside">
-      {points.map((point, i) => <li key={i}>{point}</li>)}
-    </ul>
-  </div>
-);
+const CARAMEL = '#C4A47C';
 
-interface EducationItemProps {
-  title: string;
-  institution: string;
-  date: string;
-}
-
-const EducationItem = ({ title, institution, date }: EducationItemProps) => (
-  <div className="p-6 bg-dark-card border border-dark-border rounded-2xl mb-4">
-    <h3 className="text-lg font-semibold mb-1">{title}</h3>
-    <div className="text-text-muted mb-2">{institution}</div>
-    <div className="text-sm text-text-muted/70">{date}</div>
-  </div>
-);
+const experience = [
+  {
+    title: 'Bachelor of Science in Software Engineering',
+    org: 'MIT',
+    period: '2023 — 2028',
+    desc: 'Studying core computer science fundamentals, software architecture, and full-stack development.',
+  },
+];
 
 const Journey = () => {
   return (
     <section id="resume" className="space-y-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
-          <div className="text-brand-purple font-medium text-sm tracking-wider uppercase">04 / The Journey So Far</div>
-          <h2 className="text-4xl md:text-5xl font-bold">The Journey So Far</h2>
-          <p className="text-lg text-text-muted">Experience grounded in building, learning, and collaboration.</p>
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-px" style={{ background: CARAMEL }} />
+            <span
+              className="text-sm uppercase tracking-[0.25em] font-medium"
+              style={{ color: CARAMEL }}
+            >
+              04 / Resume
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-white">Resume</h2>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-dark-card border border-dark-border hover:border-brand-purple text-white font-medium rounded-lg transition-all w-fit">
+        <button
+          className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-black transition-all"
+          style={{ background: CARAMEL }}
+        >
           Download Resume <FiDownload />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div>
-          <h3 className="text-2xl font-semibold mb-8">Experience</h3>
-          <div className="space-y-2">
-            <ExperienceItem 
-              date="2023 — Present"
-              title="Full-Stack Developer"
-              company="Independent practice"
-              points={[
-                "Build accessible web applications with React, Next.js, and TypeScript.",
-                "Design REST APIs, relational data models, and automated deployment workflows.",
-                "Collaborate with founders on product discovery, delivery, and ongoing maintenance."
-              ]}
-            />
-            <ExperienceItem 
-              date="2021 — 2023"
-              title="Software Engineer"
-              company="Northline Studio · Sample company"
-              points={[
-                "Developed reusable UI components and documented a shared design system.",
-                "Implemented authentication, payment integrations, and automated test coverage.",
-                "Partnered with designers to improve responsive layouts and keyboard accessibility."
-              ]}
-            />
-            {/* <ExperienceItem 
-              date="2020 — 2021"
-              title="Junior Web Developer"
-              company="Openframe Labs · Sample company"
-              points={[
-                "Delivered responsive marketing sites and content management integrations.",
-                "Maintained application features through code review and structured testing."
-              ]}
-            /> */}
+      {/* Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="rounded-2xl p-6"
+        style={{
+          background: 'rgba(196,164,124,0.04)',
+          border: '1px solid rgba(196,164,124,0.12)',
+        }}
+      >
+        <p className="text-zinc-300 leading-relaxed">
+          Highly motivated and detail-oriented full-stack web developer with 2+
+          years of experience in designing, developing, and deploying scalable,
+          efficient, and user-friendly web applications. Proficient in
+          JavaScript, Python, HTML/CSS, with expertise in React, Node.js, and
+          Django. Skilled in database management, API integration, and version
+          control systems like Git. Passionate about staying up-to-date with
+          the latest technologies and trends in web development.
+        </p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Left column */}
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-2xl font-semibold text-white mb-6">
+              Professional Summary
+            </h3>
+            <p className="text-zinc-400 leading-relaxed">
+              Driven software developer with expertise in developing scalable,
+              high-performance enterprise solutions.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-2xl font-semibold text-white mb-6">
+              Contact Information
+            </h3>
+            <ul className="space-y-4 text-zinc-300">
+              <li className="flex items-center gap-3">
+                <FiMapPin style={{ color: CARAMEL }} />
+                Ethiopia, Injibara
+              </li>
+              <li className="flex items-center gap-3">
+                <FiMail style={{ color: CARAMEL }} />
+                <a
+                  href="mailto:biniyamtegegne21@gmail.com"
+                  className="hover:opacity-80"
+                >
+                  biniyamtegegne21@gmail.com
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <FiPhone style={{ color: CARAMEL }} />
+                <a href="tel:+251918448553" className="hover:opacity-80">
+                  +251 91 844 8553
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <FiLinkedin style={{ color: CARAMEL }} />
+                <a
+                  href="https://www.linkedin.com/in/biniyam-tegegne-12m16/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:opacity-80 break-all"
+                >
+                  linkedin.com/in/biniyam-tegegne-12m16
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-2xl font-semibold mb-8">Education & certifications</h3>
-          <div className="space-y-4">
-            <EducationItem 
-              title="BSc, Software Engineering"
-              institution="Injibara University"
-              date="2023 — 2028 · Sample education"
-            />
-            <EducationItem 
-              title="Cloud Architecture Foundations"
-              institution="Professional learning program"
-              date="2024 · Sample certification"
-            />
-            <EducationItem 
-              title="Accessible Web Development"
-              institution="Continuing education course"
-              date="2023 · Sample certification"
-            />
-            
-            <div className="p-6 bg-dark-card border border-dark-border rounded-2xl mt-8">
-              <p className="text-xl font-serif italic text-text-muted leading-relaxed">
-                "The best code makes room for the people who use it."
-              </p>
-              <p className="text-sm text-text-muted/70 mt-4">A guiding principle</p>
-            </div>
+        {/* Right column */}
+        <div className="space-y-8">
+          <h3 className="text-2xl font-semibold text-white">
+            Professional Experience
+          </h3>
+          {experience.map((exp, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative pl-6 border-l"
+              style={{ borderColor: 'rgba(196,164,124,0.3)' }}
+            >
+              <div
+                className="absolute w-3 h-3 rounded-full -left-[6.5px] top-1.5"
+                style={{
+                  background: CARAMEL,
+                  boxShadow: `0 0 0 4px rgba(196,164,124,0.15)`,
+                }}
+              />
+              <h4 className="text-lg font-semibold text-white">
+                {exp.title}
+              </h4>
+              <div
+                className="text-sm font-medium mt-1"
+                style={{ color: CARAMEL }}
+              >
+                {exp.period}
+              </div>
+              <div className="text-zinc-400 text-sm mt-0.5">{exp.org}</div>
+              <p className="text-zinc-400 mt-3 leading-relaxed">{exp.desc}</p>
+            </motion.div>
+          ))}
+
+          <div>
+            <h3 className="text-2xl font-semibold text-white mb-4">
+              Certifications
+            </h3>
+            <p className="text-zinc-400">
+              — Add your certifications here (e.g., freeCodeCamp, Coursera,
+              Udemy).
+            </p>
           </div>
         </div>
       </div>
