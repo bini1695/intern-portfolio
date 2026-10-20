@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiInstagram, FiArrowDown } from 'react-icons/fi';
 import { SiBehance, SiDribbble, SiWhatsapp } from 'react-icons/si';
 
 const CARAMEL = '#C4A47C';
-const CARAMEL_DEEP = '#B08F62';
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 /* ============ Typing Animation ============ */
 const ROLES = [
@@ -48,140 +47,216 @@ const useTyping = (words: string[]) => {
   return { text: words[index].substring(0, subIndex), blink };
 };
 
-/* ============ Floating Badge ============ */
-const FloatingBadge = ({
-  children,
-  delay = 0,
-  className = '',
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={{ delay, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    className={`absolute ${className}`}
-  >
-    <motion.div
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay }}
-      className="px-4 py-2.5 rounded-xl backdrop-blur-md flex items-center gap-2"
-      style={{
-        background: 'rgba(20,20,20,0.9)',
-        border: '1px solid rgba(196,164,124,0.35)',
-        boxShadow: '0 12px 30px rgba(0,0,0,0.4)',
-      }}
-    >
-      {children}
-    </motion.div>
-  </motion.div>
-);
+/* ============ 3D Connected Particle Background ============ */
+type Particle = {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+};
 
-/* ============ Decorative "Hello, I'm" ============ */
-const GreetingBanner = () => {
+const ParticleField = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let raf = 0;
+    let visible = true;
+    let particles: Particle[] = [];
+
+    const BOUND = 420; // half-size of the 3D cube
+    const FOV = 900;
+    const LINK = 190; // max 3D distance for a connection
+
+    // smoothed mouse / rotation state
+    const mouse = { x: 0, y: 0 };
+    const smooth = { x: 0, y: 0 };
+    let angle = 0;
+
+    const init = () => {
+      const rect = canvas.parentElement!.getBoundingClientRect();
+      w = rect.width;
+      h = rect.height;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const count = Math.round(Math.min(130, Math.max(55, (w * h) / 14000)));
+      particles = Array.from({ length: count }, () => ({
+        x: (Math.random() * 2 - 1) * BOUND,
+        y: (Math.random() * 2 - 1) * BOUND,
+        z: (Math.random() * 2 - 1) * BOUND,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        vz: (Math.random() - 0.5) * 0.35,
+      }));
+    };
+
+    const onMove = (e: MouseEvent) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+
+    const proj = new Float32Array(0);
+    let px = proj;
+    let py = proj;
+    let pz = proj;
+    let ps = proj;
+
+    const draw = () => {
+      raf = requestAnimationFrame(draw);
+      if (!visible) return;
+
+      smooth.x += (mouse.x - smooth.x) * 0.04;
+      smooth.y += (mouse.y - smooth.y) * 0.04;
+      if (!reduceMotion) angle += 0.0014;
+
+      const ry = angle + smooth.x * 0.45;
+      const rx = smooth.y * -0.3;
+      const cy = Math.cos(ry);
+      const sy = Math.sin(ry);
+      const cx = Math.cos(rx);
+      const sx = Math.sin(rx);
+
+      const n = particles.length;
+      if (px.length !== n) {
+        px = new Float32Array(n);
+        py = new Float32Array(n);
+        pz = new Float32Array(n);
+        ps = new Float32Array(n);
+      }
+
+      ctx.clearRect(0, 0, w, h);
+
+      // anchor the cloud slightly right on wide screens so text stays readable
+      const ox = w * (w > 1024 ? 0.62 : 0.5);
+      const oy = h * 0.5;
+
+      for (let i = 0; i < n; i++) {
+        const p = particles[i];
+        if (!reduceMotion) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.z += p.vz;
+          if (p.x > BOUND || p.x < -BOUND) p.vx *= -1;
+          if (p.y > BOUND || p.y < -BOUND) p.vy *= -1;
+          if (p.z > BOUND || p.z < -BOUND) p.vz *= -1;
+        }
+
+        // rotate around Y then X
+        const x1 = p.x * cy - p.z * sy;
+        const z1 = p.x * sy + p.z * cy;
+        const y2 = p.y * cx - z1 * sx;
+        const z2 = p.y * sx + z1 * cx;
+
+        const s = FOV / (FOV + z2 + BOUND);
+        px[i] = ox + x1 * s;
+        py[i] = oy + y2 * s;
+        pz[i] = z2;
+        ps[i] = s;
+      }
+
+      // connections
+      ctx.lineWidth = 1;
+      for (let i = 0; i < n; i++) {
+        const a = particles[i];
+        for (let j = i + 1; j < n; j++) {
+          const b = particles[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dz = a.z - b.z;
+          const d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 < LINK * LINK) {
+            const d = Math.sqrt(d2);
+            const depth = (ps[i] + ps[j]) / 2;
+            const alpha = (1 - d / LINK) * 0.5 * Math.min(1, depth * 0.9);
+            ctx.strokeStyle = `rgba(196,164,124,${alpha.toFixed(3)})`;
+            ctx.beginPath();
+            ctx.moveTo(px[i], py[i]);
+            ctx.lineTo(px[j], py[j]);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // nodes (far → near for correct overlap)
+      const order = Array.from({ length: n }, (_, i) => i).sort(
+        (a, b) => pz[b] - pz[a]
+      );
+      for (const i of order) {
+        const r = Math.max(0.8, ps[i] * 2.1);
+        const alpha = Math.min(1, 0.35 + ps[i] * 0.55);
+        ctx.fillStyle = `rgba(214,184,142,${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(px[i], py[i], r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    init();
+    raf = requestAnimationFrame(draw);
+
+    const ro = new ResizeObserver(init);
+    ro.observe(canvas.parentElement!);
+    window.addEventListener('mousemove', onMove, { passive: true });
+
+    const io = new IntersectionObserver(
+      ([entry]) => (visible = entry.isIntersecting),
+      { threshold: 0 }
+    );
+    io.observe(canvas);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+      window.removeEventListener('mousemove', onMove);
+    };
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="relative inline-flex items-center gap-3"
+    <div
+      className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 overflow-hidden"
+      aria-hidden
     >
-      {/* LEFT DECORATIVE ELEMENTS */}
-      <div className="flex items-center gap-2">
-        <motion.span
-          animate={{ rotate: [0, 180, 360] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-          className="block w-2 h-2"
-          style={{
-            background: CARAMEL,
-            clipPath: 'polygon(50% 0, 100% 50%, 50% 100%, 0 50%)',
-          }}
-        />
-        <motion.span
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="block w-8 h-px origin-left"
-          style={{ background: CARAMEL }}
-        />
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="block w-6 h-px"
-          style={{
-            backgroundImage: `repeating-linear-gradient(90deg, ${CARAMEL} 0, ${CARAMEL} 3px, transparent 3px, transparent 6px)`,
-          }}
-        />
-      </div>
-
-      {/* THE TEXT with shine sweep */}
-      <span className="relative overflow-hidden inline-block px-2">
-        <motion.span
-          initial={{ opacity: 0, letterSpacing: '0.5em' }}
-          animate={{ opacity: 1, letterSpacing: '0.15em' }}
-          transition={{ delay: 0.4, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="text-2xl md:text-[1.75rem] font-semibold tracking-wider inline-block"
-          style={{ color: CARAMEL }}
-        >
-          hello i'm
-        </motion.span>
-        <motion.span
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.65) 50%, transparent 70%)',
-            backgroundSize: '200% 100%',
-          }}
-          animate={{ backgroundPosition: ['200% 0', '-100% 0'] }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            repeatDelay: 2,
-            ease: 'easeInOut',
-          }}
-          aria-hidden
-        />
-      </span>
-
-      {/* RIGHT DECORATIVE ELEMENTS */}
-      <div className="flex items-center gap-2">
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="block w-6 h-px"
-          style={{
-            backgroundImage: `repeating-linear-gradient(90deg, ${CARAMEL} 0, ${CARAMEL} 3px, transparent 3px, transparent 6px)`,
-          }}
-        />
-        <motion.span
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="block w-8 h-px origin-right"
-          style={{ background: CARAMEL }}
-        />
-        <motion.span
-          animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="block w-2 h-2 rounded-full"
-          style={{ background: CARAMEL }}
-        />
-      </div>
-
+      <canvas ref={canvasRef} className="absolute inset-0" />
+      {/* soft glow */}
       <div
-        className="pointer-events-none absolute inset-0 -z-10 blur-2xl opacity-30"
-        style={{ background: 'rgba(196,164,124,0.3)' }}
-        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 55% at 65% 50%, rgba(196,164,124,0.10), transparent 70%)',
+        }}
       />
-    </motion.div>
+      {/* vignette keeps text legible and edges clean */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.4) 100%), linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.6) 100%)',
+        }}
+      />
+    </div>
   );
 };
 
-/* ============ Socials (with Instagram + WhatsApp) ============ */
+/* ============ Socials ============ */
 const socials = [
   { href: '#', icon: <SiDribbble />, label: 'Dribbble' },
   { href: '#', icon: <SiBehance />, label: 'Behance' },
@@ -196,16 +271,27 @@ const socials = [
     label: 'LinkedIn',
   },
   {
-    href: 'https://www.instagram.com/biniyam.tegegne/', // ← Replace with your Instagram handle
+    href: 'https://www.instagram.com/biniyam.tegegne/',
     icon: <FiInstagram />,
     label: 'Instagram',
   },
   {
-    href: 'https://wa.me/251918448553', // ← Replace with your WhatsApp number (no + or spaces)
+    href: 'https://wa.me/251918448553',
     icon: <SiWhatsapp />,
     label: 'WhatsApp',
   },
 ];
+
+const stats = [
+  { value: '5+', label: 'Years Experience' },
+  { value: '15+', label: 'Projects Delivered' },
+];
+
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 22 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay, duration: 0.7, ease: EASE },
+});
 
 /* ============ Hero ============ */
 const Hero = () => {
@@ -214,213 +300,163 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
+      className="relative flex min-h-[calc(100vh-5rem)] items-center py-20"
     >
-      {/* LEFT: Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="space-y-6 relative z-10"
-      >
-        <GreetingBanner />
+      <ParticleField />
 
+      <div className="relative z-10 max-w-3xl space-y-7">
+        {/* Eyebrow */}
+        <motion.div {...fadeUp(0.05)} className="inline-flex items-center gap-3">
+          <span className="relative flex h-2 w-2">
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+              style={{ background: CARAMEL }}
+            />
+            <span
+              className="relative inline-flex h-2 w-2 rounded-full"
+              style={{ background: CARAMEL }}
+            />
+          </span>
+          <span
+            className="text-xs font-semibold uppercase tracking-[0.3em]"
+            style={{ color: CARAMEL }}
+          >
+            Hello, I&apos;m
+          </span>
+          <span
+            className="block h-px w-14"
+            style={{
+              background: `linear-gradient(90deg, ${CARAMEL}, transparent)`,
+            }}
+          />
+        </motion.div>
+
+        {/* 
+          ማስተካከያ: በሞባይል ላይ 'text-5xl' የነበረው ወደ 'text-4xl' ተቀይሯል።
+          በ md (ታብሌት) እና lg (ዴስክቶፕ) ላይ ግን እንደቀድሞው ትልቅ ሆኖ ይቀጥላል።
+        */}
         <motion.h1
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl md:text-[2.75rem] font-bold text-white leading-tight"
+          {...fadeUp(0.15)}
+          className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-7xl"
         >
           Biniyam Tegegne
         </motion.h1>
 
-        {/* Typing animation */}
         <motion.p
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-2xl md:text-[1.75rem] text-zinc-200 font-medium min-h-[2.5rem]"
+          {...fadeUp(0.25)}
+          className="min-h-[2.5rem] text-xl font-medium text-zinc-200 md:text-3xl"
         >
-          I'm a{' '}
+          I&apos;m a{' '}
           <span className="relative font-bold" style={{ color: CARAMEL }}>
             {text}
             <span
-              className="inline-block w-[3px] h-[1.4em] ml-1 align-middle transition-opacity"
-              style={{
-                background: CARAMEL,
-                opacity: blink ? 1 : 0,
-              }}
-            />
-            <span
-              className="absolute left-0 -bottom-1 h-[2px] w-full"
-              style={{ background: CARAMEL, opacity: 0.35 }}
+              className="ml-1 inline-block h-[1.2em] w-[3px] align-middle transition-opacity"
+              style={{ background: CARAMEL, opacity: blink ? 1 : 0 }}
             />
           </span>
         </motion.p>
 
         <motion.p
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-base md:text-lg leading-relaxed text-zinc-300 max-w-xl"
+          {...fadeUp(0.35)}
+          className="max-w-xl text-base leading-relaxed text-zinc-400 md:text-lg"
         >
-          I'm excited about creating big, effective, and lasting digital
-          products (like websites or apps) that combine new and creative ideas
-          with practical and working code. Let me help make your ideas a
-          reality.
+          I build fast, reliable and scalable digital products — websites and
+          apps that pair thoughtful design with clean, production-ready code.
+          Let me help turn your idea into reality.
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-          className="flex flex-wrap items-center gap-4 pt-3"
+          {...fadeUp(0.45)}
+          className="flex flex-wrap items-center gap-4 pt-2"
         >
           <a
             href="#projects"
-            className="btn-swap-fill inline-flex items-center justify-center px-7 py-3.5 rounded-full font-semibold"
+            className="btn-swap-fill inline-flex items-center justify-center rounded-full px-7 py-3.5 font-semibold"
           >
             View My Work
           </a>
           <a
             href="#contact"
-            className="btn-swap-outline inline-flex items-center justify-center px-7 py-3.5 rounded-full font-semibold"
+            className="btn-swap-outline inline-flex items-center justify-center rounded-full px-7 py-3.5 font-semibold"
           >
             Get In Touch
           </a>
         </motion.div>
 
-        {/* Socials */}
+        {/* Stats + Socials */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="flex flex-wrap items-center gap-3 pt-6"
+          {...fadeUp(0.55)}
+          className="flex flex-col gap-8 pt-6 sm:flex-row sm:items-center sm:gap-10"
         >
-          {socials.map((s, i) => (
-            <motion.a
-              key={i}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={s.label}
-              whileHover={{ y: -3 }}
-              className="group relative w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.6)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = CARAMEL;
-                e.currentTarget.style.borderColor = 'rgba(196,164,124,0.5)';
-                e.currentTarget.style.background = 'rgba(196,164,124,0.08)';
-                e.currentTarget.style.boxShadow =
-                  '0 10px 25px rgba(196,164,124,0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <span className="text-lg">{s.icon}</span>
-
-              {/* Tooltip */}
-              <span
-                className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: CARAMEL,
-                  color: '#000',
-                  boxShadow: '0 6px 16px rgba(196,164,124,0.35)',
-                }}
-              >
-                {s.label}
-                <span
-                  className="absolute left-1/2 -bottom-1 w-2 h-2 -translate-x-1/2 rotate-45"
-                  style={{ background: CARAMEL }}
-                />
-              </span>
-            </motion.a>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      {/* RIGHT: Photo */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="relative flex justify-center lg:justify-end"
-      >
-        <div className="relative w-[320px] h-[400px] sm:w-[360px] sm:h-[450px] lg:w-[380px] lg:h-[475px]">
-          <div
-            className="absolute -inset-8 rounded-[3rem] blur-3xl opacity-50"
-            style={{
-              background:
-                'radial-gradient(circle at 50% 30%, rgba(196,164,124,0.35), transparent 70%)',
-            }}
-          />
-
-          <div
-            className="relative w-full h-full rounded-[2rem] overflow-hidden"
-            style={{
-              border: '1px solid rgba(196,164,124,0.20)',
-              boxShadow:
-                '0 30px 80px -20px rgba(196,164,124,0.30), 0 20px 40px -20px rgba(0,0,0,0.5)',
-            }}
-          >
-            <Image
-              src="/assets/images/bana.jpg"
-              alt="Biniyam Tegegne"
-              fill
-              className="object-cover object-center"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+          <div className="flex items-center gap-8">
+            {stats.map((s, i) => (
+              <div key={s.label} className="flex items-center gap-8">
+                <div>
+                  <div className="text-3xl font-bold text-white">{s.value}</div>
+                  <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+                    {s.label}
+                  </div>
+                </div>
+                {i < stats.length - 1 && (
+                  <span className="h-10 w-px bg-white/10" aria-hidden />
+                )}
+              </div>
+            ))}
           </div>
 
-          <FloatingBadge delay={0.9} className="-bottom-4 -left-6">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-black text-black"
-              style={{ background: CARAMEL }}
-            >
-              5+
-            </div>
-            <div>
-              <div className="text-sm font-bold text-white leading-none">
-                Years
-              </div>
-              <div className="text-[10px] text-zinc-400 tracking-wider mt-0.5">
-                EXPERIENCE
-              </div>
-            </div>
-          </FloatingBadge>
+          <span className="hidden h-10 w-px bg-white/10 sm:block" aria-hidden />
 
-          <FloatingBadge delay={1.1} className="-top-4 -right-6">
-            <span className="relative flex h-2 w-2">
-              <span
-                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                style={{ background: CARAMEL }}
-              />
-              <span
-                className="relative inline-flex rounded-full h-2 w-2"
-                style={{ background: CARAMEL }}
-              />
-            </span>
-            <div>
-              <div className="text-sm font-bold text-white leading-none">
-                15+
-              </div>
-              <div className="text-[10px] text-zinc-400 tracking-wider mt-0.5">
-                PROJECTS
-              </div>
-            </div>
-          </FloatingBadge>
-        </div>
-      </motion.div>
+          <div className="flex flex-wrap items-center gap-3">
+            {socials.map((s) => (
+              <motion.a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                whileHover={{ y: -3 }}
+                className="group relative flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.6)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = CARAMEL;
+                  e.currentTarget.style.borderColor = 'rgba(196,164,124,0.5)';
+                  e.currentTarget.style.background = 'rgba(196,164,124,0.08)';
+                  e.currentTarget.style.boxShadow =
+                    '0 10px 25px rgba(196,164,124,0.25)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span className="text-lg">{s.icon}</span>
+
+                <span
+                  className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{
+                    background: CARAMEL,
+                    color: '#000',
+                    boxShadow: '0 6px 16px rgba(196,164,124,0.35)',
+                  }}
+                >
+                  {s.label}
+                  <span
+                    className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45"
+                    style={{ background: CARAMEL }}
+                  />
+                </span>
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+      </div>
 
       {/* Scroll indicator */}
       <motion.a
@@ -428,19 +464,16 @@ const Hero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.4 }}
-        className="hidden lg:flex absolute bottom-0 left-1/2 -translate-x-1/2 flex-col items-center gap-2 group"
+        className="group absolute bottom-4 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 lg:flex"
       >
-        <span className="text-[10px] tracking-[0.3em] uppercase text-zinc-500 group-hover:text-[#C4A47C] transition-colors">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 transition-colors group-hover:text-[#C4A47C]">
           Scroll
         </span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <FiArrowDown
-            className="group-hover:text-[#C4A47C] transition-colors"
-            style={{ color: CARAMEL }}
-          />
+          <FiArrowDown style={{ color: CARAMEL }} />
         </motion.div>
       </motion.a>
     </section>
