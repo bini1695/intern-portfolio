@@ -6,9 +6,6 @@ const nextConfig = {
       { protocol: 'https', hostname: 'media.istockphoto.com' },
     ],
   },
-  outputFileTracingIncludes: {
-    '/api/download': ['./app/resume.pdf'],
-  },
 };
 
 module.exports = nextConfig;
