@@ -7,7 +7,8 @@ const CARAMEL = '#C4A47C';
 
 const Resume = () => {
   return (
-    <section id="Resume" className="relative py-20 flex flex-col items-center justify-center text-center space-y-8">
+    // 👇 እዚህ ጋር 'id="resume"' ብለን ቀይረነዋል (በትንሽ ፊደል)
+    <section id="resume" className="relative py-20 flex flex-col items-center justify-center text-center space-y-8">
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -24,9 +25,9 @@ const Resume = () => {
         </p>
       </motion.div>
 
-           {/* Download Button */}
+      {/* Download Button */}
       <motion.a
-        href="/resume.pdf" // 👈 ማስተካከያው እዚህ ነው
+        href="/resume.pdf" 
         download="Biniyam-Tegegne-CV.pdf"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
