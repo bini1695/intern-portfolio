@@ -24,8 +24,8 @@ const projects = [
     tags: ['React', 'Express.js', 'MySQL'],
     image:
       'https://media.istockphoto.com/id/1008617634/photo/veterinarians-with-baby-goat.webp?s=1024x1024&w=is&k=20&c=OA44l8666YR8DJmYNr7kGU30l0JUHTglkcVJcITuk0o=',
-    demo: 'https://dejeneanimalclinic.vercel.app/', // ← Replace with your live demo URL
-    github: 'https://github.com/bini1695/WEATHER-FORCAST',
+    demo: 'https://dejeneanimalclinic.vercel.app/',
+    github: 'https://github.com/bini1695/VMS-FULLSTACK', // ← replace with real repo
   },
   {
     id: 2,
@@ -35,19 +35,19 @@ const projects = [
     tags: ['React', 'CSS3', 'Framer Motion'],
     image:
       'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=1000&auto=format&fit=crop',
-    demo: 'https://example.com', // ← Replace with your live demo URL
-    github: '#',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/apple-website-clone', // ← replace with real repo
   },
   {
     id: 3,
     category: 'Web Application',
     title: 'E-commerce Store',
     desc: 'A modern online store with product browsing, cart management, secure checkout, and order tracking.',
-    tags: ['React', 'Next.js', 'Stripe'],
+    tags: ['Next.js', 'Nest.js'],
     image:
       'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1000&auto=format&fit=crop',
-    demo: 'https://example.com', // ← Replace with your live demo URL
-    github: '#',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/ECS', // ← replace with real repo
   },
   {
     id: 4,
@@ -57,19 +57,19 @@ const projects = [
     tags: ['React', 'Next.js', 'Tailwind'],
     image:
       'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=1000&auto=format&fit=crop',
-    demo: 'https://example.com', // ← Replace with your live demo URL
-    github: '#',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/Netflix-clone-2026', // ← replace with real repo
   },
   {
     id: 5,
     category: 'Web Application',
     title: 'Weather Forecast App',
     desc: 'A real-time weather app with location-based forecasts and animated weather icons.',
-    tags: ['React', 'OpenWeather API'],
+    tags: ['Next js', 'Nest js'],
     image:
       'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=1000&auto=format&fit=crop',
-    demo: 'https://example.com', // ← Replace with your live demo URL
-    github: 'https://github.com/bini1695/WEATHER-FORCAST',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/WEATHER-FORCAST', // already set ✓
   },
   {
     id: 6,
@@ -79,8 +79,8 @@ const projects = [
     tags: ['Next.js', 'Sanity', 'Tailwind'],
     image:
       'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop',
-    demo: 'https://example.com', // ← Replace with your live demo URL
-    github: '#',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/fieldnotes-explorer', // ← replace with real repo
   },
 ];
 
