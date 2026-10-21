@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { SiNestjs } from 'react-icons/si';
 import {
   SiHtml5,
   SiJavascript,
@@ -26,11 +27,12 @@ type Skill = {
 };
 
 const skills: Skill[] = [
-  { name: 'HTML/CSS', level: 95, category: 'Front-end', icon: <SiHtml5 />, desc: 'Expert level knowledge of semantic HTML5 and modern CSS3 techniques' },
+  { name: 'Next js', level: 95, category: 'Front-end', icon: <SiHtml5 />, desc: 'strong proficency in Next js' },
   { name: 'JavaScript', level: 85, category: 'Front-end', icon: <SiJavascript />, desc: 'Strong proficiency in ES6+, DOM manipulation, and modern frameworks' },
   { name: 'React', level: 80, category: 'Front-end', icon: <SiReact />, desc: 'Experience with React hooks, state management, and component architecture' },
   { name: 'Node.js', level: 75, category: 'Back-end', icon: <SiNodedotjs />, desc: 'Server-side JavaScript development with Express and REST APIs' },
   { name: 'Python', level: 70, category: 'Back-end', icon: <SiPython />, desc: 'Python development with Django and data analysis tools' },
+  { name: 'Nest js', level: 65, category: 'Back-end', icon: <SiNestjs />, desc: 'Build backend logic with Nest' },
   { name: 'SQL', level: 65, category: 'Back-end', icon: <SiMysql />, desc: 'Database design, optimization, and complex queries' },
 ];
 
