@@ -24,11 +24,10 @@ const Resume = () => {
         </p>
       </motion.div>
 
-      {/* የማውረጃ ቁልፍ */}
+           {/* Download Button */}
       <motion.a
-        // አሁን የፋይሉ ስም resume.pdf ስለሆነ መንገዱ እንደዚህ ይሆናል
-        href="/assets/images/Resume.pdf" 
-        download="resume.pdf" 
+        href="/resume.pdf" // 👈 ማስተካከያው እዚህ ነው
+        download="Biniyam-Tegegne-CV.pdf"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
