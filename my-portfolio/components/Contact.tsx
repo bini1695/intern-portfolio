@@ -266,7 +266,7 @@ const Contact = () => {
               </div>
               <div>
                 <div className="text-sm text-zinc-500 mb-1">MY LOCATION</div>
-                <div className="text-lg font-medium text-white">Injibara, Ethiopia</div>
+                <div className="text-lg font-medium text-white">Addis Abeba, Ethiopia</div>
               </div>
             </div>
 
