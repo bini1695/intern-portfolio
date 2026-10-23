@@ -196,9 +196,9 @@ const ParticleField = () => {
 
 /* ============ Data ============ */
 const stats = [
-  { value: '10+', label: 'Projects Completed' },
+  { value: '3+', label: 'Projects Completed' },
   { value: '2+', label: 'Years Experience' },
-  { value: '98%', label: 'Client Satisfaction' },
+  { value: '70%', label: 'Client Satisfaction' },
 ];
 
 const facts = [
@@ -209,10 +209,10 @@ const facts = [
 ];
 
 const counters = [
-  { label: 'Happy Clients', value: 15 },
-  { label: 'Projects', value: 10 },
-  { label: 'Hours Of Support', value: 500 },
-  { label: 'Hard Workers', value: 5 },
+  { label: 'Happy Clients', value: 3 },
+  { label: 'Projects', value: 3 },
+  { label: 'Hours Of Support', value: 20 },
+  { label: 'Hard Workers', value: 1 },
 ];
 
 const About = () => {
