@@ -283,8 +283,8 @@ const socials = [
 ];
 
 const stats = [
-  { value: '5+', label: 'Years Experience' },
-  { value: '15+', label: 'Projects Delivered' },
+  { value: '2+', label: 'Years Experience' },
+  { value: '3+', label: 'Projects Delivered' },
 ];
 
 const fadeUp = (delay: number) => ({
