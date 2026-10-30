@@ -239,7 +239,7 @@ const About = () => {
               boxShadow: '0 30px 60px -20px rgba(196,164,124,0.25)',
             }}
           >
-            <Image src="/assets/images/bana.jpg" alt="Biniyam" fill className="object-cover object-top" />
+            <Image src="/assets/images/new 6.jpg" alt="Biniyam" fill className="object-cover object-top" />
           </motion.div>
 
           <motion.div
