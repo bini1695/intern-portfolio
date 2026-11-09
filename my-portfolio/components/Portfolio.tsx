@@ -49,6 +49,7 @@ const projects = [
     demo: 'https://example.com',
     github: 'https://github.com/bini1695/ECS', // ← replace with real repo
   },
+  
   {
     id: 4,
     category: 'Web Application',
@@ -81,6 +82,17 @@ const projects = [
       'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop',
     demo: 'https://example.com',
     github: 'https://github.com/bini1695/fieldnotes-explorer', // ← replace with real repo
+  },
+   {
+    id: 7,
+    category: 'Mobile Application',
+    title: 'Social media app',
+    desc: 'A modern online store with product browsing, cart management, secure checkout, and order tracking.',
+    tags: ['React Native', 'Nest.js'],
+    image:
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1000&auto=format&fit=crop',
+    demo: 'https://example.com',
+    github: 'https://github.com/bini1695/ECS', // ← replace with real repo
   },
 ];
 
